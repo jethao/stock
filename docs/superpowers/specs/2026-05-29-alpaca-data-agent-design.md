@@ -41,6 +41,7 @@ The provider is selected by environment variables:
 - `ALPACA_SECRET_KEY` is required for Alpaca.
 - `ALPACA_PAPER=true` uses Alpaca paper trading endpoints.
 - `ALPACA_SYMBOLS=PLTR,NVDA` defines the symbol universe to evaluate.
+- `ALPACA_SYMBOL_SECTORS=PLTR:AI,NVDA:AI` maps symbols into investment-philosophy sectors.
 
 If Alpaca is selected and required credentials or symbols are missing, the orchestrator must fail closed before producing trade intents.
 
@@ -60,6 +61,7 @@ Mapping into domain models:
 - Account buying power becomes `PortfolioState.buying_power`.
 - Open positions become `Position` records.
 - Symbols from `ALPACA_SYMBOLS` become candidate `Asset` records.
+- Sectors from `ALPACA_SYMBOL_SECTORS` become `Asset.sector`; missing entries become `Unknown`.
 - Latest price and recent bar history become `MarketSnapshot` records.
 - Drawdown is calculated as `(latest_price - recent_high) / recent_high`.
 - Penny-stock detection is `latest_price < 5.00`.

@@ -50,6 +50,7 @@ def make_agent(symbols=None):
         api_key="key",
         secret_key="secret",
         symbols=symbols or ["PLTR", "NVDA"],
+        symbol_sectors={"PLTR": "AI", "NVDA": "AI"},
         paper=True,
     )
     return AlpacaDataAgent(
@@ -76,6 +77,7 @@ def test_alpaca_data_agent_maps_positions():
     position = portfolio.positions[0]
     assert position.asset.symbol == "PLTR"
     assert position.asset.asset_type is AssetType.STOCK
+    assert position.asset.sector == "AI"
     assert position.quantity == 10.0
     assert position.market_price == 20.0
     assert position.cost_basis == 15.0
@@ -86,6 +88,7 @@ def test_alpaca_data_agent_maps_bars_to_market_snapshots():
 
     by_symbol = {snapshot.asset.symbol: snapshot for snapshot in snapshots}
     assert by_symbol["PLTR"].price == 20.0
+    assert by_symbol["PLTR"].asset.sector == "AI"
     assert by_symbol["PLTR"].previous_close == 24.0
     assert by_symbol["PLTR"].drawdown_from_recent_high == -0.20
     assert by_symbol["PLTR"].is_penny_stock is False

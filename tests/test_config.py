@@ -17,6 +17,7 @@ def test_config_parses_alpaca_symbols_and_credentials(monkeypatch):
     monkeypatch.setenv("ALPACA_API_KEY", "key")
     monkeypatch.setenv("ALPACA_SECRET_KEY", "secret")
     monkeypatch.setenv("ALPACA_SYMBOLS", " PLTR, nvda ,,TSLA ")
+    monkeypatch.setenv("ALPACA_SYMBOL_SECTORS", "PLTR:AI,nvda:AI,TSLA:Energy")
     monkeypatch.setenv("ALPACA_PAPER", "false")
 
     config = load_data_provider_config()
@@ -25,6 +26,7 @@ def test_config_parses_alpaca_symbols_and_credentials(monkeypatch):
     assert config.api_key == "key"
     assert config.secret_key == "secret"
     assert config.symbols == ["PLTR", "NVDA", "TSLA"]
+    assert config.symbol_sectors == {"PLTR": "AI", "NVDA": "AI", "TSLA": "Energy"}
     assert config.paper is False
 
 

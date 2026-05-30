@@ -126,7 +126,9 @@ class AlpacaDataAgent:
         )
 
     def _asset_for(self, symbol: str) -> Asset:
-        return Asset(symbol=symbol.upper(), asset_type=AssetType.STOCK, sector="Unknown")
+        clean_symbol = symbol.upper()
+        sector = (self.config.symbol_sectors or {}).get(clean_symbol, "Unknown")
+        return Asset(symbol=clean_symbol, asset_type=AssetType.STOCK, sector=sector)
 
     @staticmethod
     def _build_trading_client(config: DataProviderConfig) -> Any:

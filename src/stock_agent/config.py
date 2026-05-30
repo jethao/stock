@@ -15,11 +15,14 @@ class DataProviderConfig:
     api_key: str | None = None
     secret_key: str | None = None
     symbols: list[str] | None = None
+    symbol_sectors: dict[str, str] | None = None
     paper: bool = True
 
     def __post_init__(self) -> None:
         if self.symbols is None:
             object.__setattr__(self, "symbols", [])
+        if self.symbol_sectors is None:
+            object.__setattr__(self, "symbol_sectors", {})
 
 
 def load_data_provider_config(env: Mapping[str, str] | None = None) -> DataProviderConfig:
@@ -35,6 +38,7 @@ def load_data_provider_config(env: Mapping[str, str] | None = None) -> DataProvi
     api_key = values.get("ALPACA_API_KEY", "").strip()
     secret_key = values.get("ALPACA_SECRET_KEY", "").strip()
     symbols = _parse_symbols(values.get("ALPACA_SYMBOLS", ""))
+    symbol_sectors = _parse_symbol_sectors(values.get("ALPACA_SYMBOL_SECTORS", ""))
     paper = values.get("ALPACA_PAPER", "true").strip().lower() not in {"0", "false", "no"}
 
     missing: list[str] = []
@@ -52,9 +56,23 @@ def load_data_provider_config(env: Mapping[str, str] | None = None) -> DataProvi
         api_key=api_key,
         secret_key=secret_key,
         symbols=symbols,
+        symbol_sectors=symbol_sectors,
         paper=paper,
     )
 
 
 def _parse_symbols(raw_symbols: str) -> list[str]:
     return [symbol.strip().upper() for symbol in raw_symbols.split(",") if symbol.strip()]
+
+
+def _parse_symbol_sectors(raw_symbol_sectors: str) -> dict[str, str]:
+    sectors: dict[str, str] = {}
+    for item in raw_symbol_sectors.split(","):
+        if ":" not in item:
+            continue
+        symbol, sector = item.split(":", 1)
+        clean_symbol = symbol.strip().upper()
+        clean_sector = sector.strip()
+        if clean_symbol and clean_sector:
+            sectors[clean_symbol] = clean_sector
+    return sectors
