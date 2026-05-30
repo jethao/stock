@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from stock_agent.agents.audit import AuditAgent
+from stock_agent.agents.alpaca_data import AlpacaDataAgent
 from stock_agent.agents.confirmation import CliConfirmationAgent, FixedConfirmationAgent
 from stock_agent.agents.data import DataAgent
 from stock_agent.agents.execution import ExecutionAgent, PaperBroker
 from stock_agent.agents.portfolio import PortfolioAgent
 from stock_agent.agents.risk import RiskAgent
 from stock_agent.agents.strategy import StrategyAgent
+from stock_agent.config import load_data_provider_config
 from stock_agent.models import ExecutionResult
 from stock_agent.policies.investment import load_investment_policy
 
@@ -19,15 +22,22 @@ class TradingOrchestrator:
         policy_path: Path,
         audit_path: Path,
         confirmation_agent: CliConfirmationAgent | FixedConfirmationAgent | None = None,
+        data_agent: Any | None = None,
     ) -> None:
         self.policy = load_investment_policy(policy_path)
-        self.data_agent = DataAgent()
+        self.data_agent = data_agent or self._build_data_agent()
         self.strategy_agent = StrategyAgent(self.policy)
         self.portfolio_agent = PortfolioAgent(self.policy)
         self.risk_agent = RiskAgent(self.policy)
         self.confirmation_agent = confirmation_agent or CliConfirmationAgent()
         self.execution_agent = ExecutionAgent(PaperBroker())
         self.audit_agent = AuditAgent(audit_path)
+
+    def _build_data_agent(self) -> Any:
+        config = load_data_provider_config()
+        if config.provider == "alpaca":
+            return AlpacaDataAgent(config)
+        return DataAgent()
 
     def run_once(self) -> list[ExecutionResult]:
         portfolio = self.data_agent.get_portfolio()
